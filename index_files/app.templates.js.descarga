@@ -1,0 +1,20 @@
+// angular.module('rv.app').run(['$templateCache', function($templateCache) {
+//   'use strict';
+
+//   $templateCache.put('/app/app.html',
+//     "<header><div rv-s-row><div rv-s-col=3 rv-s-py=3 rv-s-px=4><img src=/assets/img/rv-logo-shadow.png width=30 alt=\"reverbio\"></div></div></header><div rv-s-row><div rv-s-col=12><h1>Hello {{ text }}</h1></div></div><div ui-view rv-s-pxy=6></div>"
+//   );
+
+//   $templateCache.put('/core/templates/core.templates.modal.html',
+//     "<div class=bach-modal-container></div>"
+//   );
+
+//   $templateCache.put('/core/templates/core.templates.partial.claim-offer.html',
+//     "<div class=bach-offer><div style=margin-bottom:10px>{{::message}}</div><form class=\"bach-component bach-form\"><fieldset class=bach-offer-field><input class=bach-offer-input type=email required placeholder=your@email.com name=email bach-field-id=2></fieldset><input type=hidden name=offer bach-field-id=12 data-ng-attr-value={{offerId}}><fieldset class=bach-form__submit><button class=bach-offer-button>Submit</button></fieldset></form></div>"
+//   );
+
+//   $templateCache.put('/core/templates/core.templates.partial.form-submission-response.html',
+//     "<div class=bach-modal><div class=bach-modal__header><div class=bach-modal__close ng-click=close()><svg id=icon-close class=svg-icon-outline xmlns=http://www.w3.org/2000/svg width=16 height=16 viewbox=\"0 0 16 16\"><path d=M9.13,7.72l6.29-6.29A1,1,0,0,0,14,0L7.72,6.3,1.43,0A1,1,0,0,0,0,1.43L6.31,7.72,0,14a1,1,0,1,0,1.41,1.41L7.72,9.13,14,15.43A1,1,0,0,0,15.43,14Z transform=\"translate(0.28 0.28)\"></svg></div></div><div class=bach-modal__body><div id=bach-theme><div style=padding-top:20px>{{::message}}</div></div></div></div>"
+//   );
+
+// }]);

@@ -1,0 +1,1054 @@
+angular
+  .module("rv.directives", [])
+  //   .directive("bachForm", function (
+  //     $q,
+  //     $http,
+  //     $log,
+  //     Environment,
+  //     $cookies,
+  //     CookieToJson,
+  //     DiscreteEvent,
+  //     EventsManager,
+  //     PrintImage,
+  //     BachModal,
+  //     $location,
+  //     $timeout,
+  //     WindowIdler,
+  //     BachPaths,
+  //     $localStorage
+  //   ) {
+  //     return {
+  //       scope: true,
+  //       restrict: "CA",
+  //       link: function (scope, element, attrs) {
+  //         var inputs = element.find("input");
+  //         var selects = element.find("select");
+  //         var textareas = element.find("textarea");
+  //         var submitUrl = Environment.path + "/form";
+  //         var resets = [];
+  //         var em = EventsManager;
+  //         var submitting = false;
+
+  //         var body = [],
+  //           actionType = attrs.bachAction,
+  //           actionHref = attrs.bachActionHref ? URI(attrs.bachActionHref) : null,
+  //           actionDownloadName = attrs.bachActionDownloadName,
+  //           actionPrintSrc = attrs.bachActionPrintSrc,
+  //           actionTarget = attrs.bachActionTarget || "_self",
+  //           message = attrs.bachMessage;
+
+  //         angular.forEach(inputs, function (i) {
+  //           var input = angular.element(i),
+  //             inputType = input.attr("type"),
+  //             inputName = input.attr("name");
+
+  //           if (inputType !== "checkbox" && inputType !== "radio") {
+  //             if (angular.isString($location.search()[inputName])) {
+  //               input.val($location.search()[inputName]);
+  //             }
+  //           }
+  //         });
+
+  //         angular.forEach(selects, function (s) {
+  //           var select = angular.element(s),
+  //             selectName = select.attr("name");
+
+  //           if (selectName) {
+  //             if (angular.isString($location.search()[selectName])) {
+  //               select.val($location.search()[selectName]);
+  //             }
+  //           }
+  //         });
+
+  //         element.on("submit", function (e) {
+  //           if (!submitting) {
+  //             disableForm();
+
+  //             if (actionType != "post") {
+  //               e.preventDefault();
+  //               e.stopImmediatePropagation();
+  //             }
+
+  //             var body = serializeForm();
+  //             postData(body).then(onSubmitSuccess, onSubmitFailure);
+  //             handleRedirect(true);
+  //             displayModal();
+  //           }
+  //         });
+
+  //         var disableForm = function () {
+  //           submitting = true;
+
+  //           var submitBtn = element.find("button");
+  //           if (submitBtn) {
+  //             submitBtn.addClass("disabled");
+  //           }
+  //         };
+
+  //         var setQueryParams = function (uri, name, value) {
+  //           if (uri && uri.hasQuery && uri.hasQuery(name)) {
+  //             uri.setQuery(name, value);
+  //           }
+  //         };
+
+  //         var serializeForm = function () {
+  //           body = [];
+
+  //           angular.forEach(inputs, function (i) {
+  //             var input = angular.element(i),
+  //               inputType = input.attr("type"),
+  //               inputName = input.attr("bach-field-id") || input.attr("name"),
+  //               fieldBody = {};
+
+  //             if (inputType === "checkbox" || inputType === "radio") {
+  //               if (input[0].checked) {
+  //                 fieldBody.formFieldId = inputName;
+  //                 fieldBody.responseValue = input.val();
+  //                 body.push(fieldBody);
+  //                 resets.push(input);
+  //                 setQueryParams(actionHref, input.attr("name"), input.val());
+  //               }
+  //             } else if (inputName) {
+  //               fieldBody.formFieldId = inputName;
+  //               fieldBody.responseValue = input.val();
+  //               body.push(fieldBody);
+  //               resets.push(input);
+  //               setQueryParams(actionHref, input.attr("name"), input.val());
+  //             }
+  //           });
+
+  //           angular.forEach(selects, function (s) {
+  //             var select = angular.element(s),
+  //               selectName = select.attr("bach-field-id") || select.attr("name"),
+  //               fieldBody = {};
+
+  //             if (selectName) {
+  //               fieldBody.formFieldId = selectName;
+  //               fieldBody.responseValue = select.val();
+  //               body.push(fieldBody);
+  //               resets.push(select);
+  //               setQueryParams(actionHref, select.attr("name"), select.val());
+  //             }
+  //           });
+
+  //           angular.forEach(textareas, function (t) {
+  //             var textarea = angular.element(t),
+  //               textareaName =
+  //                 textarea.attr("bach-field-id") || textarea.attr("name"),
+  //               fieldBody = {};
+
+  //             if (textareaName) {
+  //               fieldBody.formFieldId = textareaName;
+  //               fieldBody.responseValue = textarea.val();
+  //               body.push(fieldBody);
+  //               resets.push(textarea);
+  //               setQueryParams(actionHref, textarea.attr("name"), textarea.val());
+  //             }
+  //           });
+
+  //           return angular.toJson(body);
+  //         };
+
+  //         var postData = function (body) {
+  //           if ($location.search().test == "true") {
+  //             return $q.when({ testMode: "true" });
+  //           }
+
+  //           return $http.post(submitUrl, body, {
+  //             contentType: "application/json",
+  //             params: {
+  //               sessionId: Environment.sessionId,
+  //               campaignId: Environment.campaignId,
+  //               pageId: Environment.pageId,
+  //               variantId: Environment.variantId,
+  //             },
+  //           });
+  //         };
+
+  //         var handleRedirect = function (newWindow) {
+  //           if (actionType && actionType === "link") {
+  //             var openNewWindow = newWindow && actionTarget === "_blank";
+  //             redirectWindow = !newWindow && actionTarget === "_self";
+
+  //             if (openNewWindow || redirectWindow) {
+  //               window.open(actionHref, actionTarget);
+  //               window.focus();
+  //             }
+  //           }
+  //         };
+
+  //         var displayModal = function () {
+  //           if (!actionType || (actionType !== "link" && actionType !== "post")) {
+  //             BachModal.open(
+  //               {
+  //                 templateUrl: BachPaths.templates.formSubmissionResponse,
+  //                 controller: [
+  //                   "$scope",
+  //                   function ($scope) {
+  //                     $scope.message = message || "Thank you!";
+  //                   },
+  //                 ],
+  //               },
+  //               true
+  //             );
+  //           }
+  //         };
+
+  //         var onSubmitSuccess = function (response) {
+  //           $log.debug("FormCapture Success:", response);
+
+  //           angular.forEach(resets, function (reset) {
+  //             if (
+  //               reset.attr("type") === "checkbox" ||
+  //               reset.attr("type") === "radio"
+  //             ) {
+  //               reset.attr("checked", "");
+  //             } else {
+  //               reset.val("");
+  //             }
+  //           });
+
+  //           $localStorage[Environment.pageId] = true;
+
+  //           angular.forEach(inputs, function (input) {
+  //             input.blur();
+  //           });
+
+  //           em.trigger("formsubmit");
+  //           WindowIdler.ping();
+  //           resets = [];
+
+  //           if (actionType) {
+  //             switch (actionType) {
+  //               case "link":
+  //                 handleRedirect();
+  //                 break;
+  //               case "asset":
+  //                 if (actionHref) {
+  //                   var link = document.createElement("a");
+  //                   link.href = actionHref;
+  //                   link.style = "visibility:hidden";
+  //                   link.download = actionDownloadName || "download";
+  //                   document.body.appendChild(link);
+  //                   link.click();
+  //                   document.body.removeChild(link);
+  //                 }
+  //                 break;
+  //               case "print":
+  //                 if (actionPrintSrc) {
+  //                   PrintImage.open(actionPrintSrc);
+  //                 }
+  //                 break;
+  //             }
+  //           }
+  //         };
+
+  //         var onSubmitFailure = function (error) {
+  //           $log.debug("FormCapture Failure:", error);
+
+  //           submitting = false;
+
+  //           var submitBtn = element.find("button");
+  //           if (submitBtn) {
+  //             submitBtn.removeClass("disabled");
+  //           }
+  //         };
+  //       },
+  //     };
+  //   })
+  //   .directive("jsBachFillWindow", function ($window, CSS) {
+  //     return {
+  //       restrict: "AC",
+  //       link: function (scope, element, attrs) {
+  //         if (!!scope.$eval(attrs.bachFillHeight)) {
+  //           CSS.set(element, "height", $window.innerHeight + "px");
+  //           angular.element($window).bind("resize", function () {
+  //             CSS.set(element, "height", $window.innerHeight + "px");
+  //           });
+  //         }
+  //       },
+  //     };
+  //   })
+  //   .directive("bachCampaignFollow", function (EventsManager) {
+  //     return {
+  //       link: function (scope, element, attrs) {
+  //         var isCampaignFollow = attrs.bachCampaignFollow;
+  //         var em = EventsManager;
+
+  //         element.on("click", function () {
+  //           if (isCampaignFollow) {
+  //             em.trigger("campaignfollow", {
+  //               eventTarget: element.attr("id"),
+  //               eventData: {
+  //                 campaignId: attrs.bachCampaignFollow,
+  //               },
+  //             });
+  //           }
+  //         });
+  //       },
+  //     };
+  //   })
+  //   .directive("bachConversion", function (EventsManager) {
+  //     return {
+  //       link: function (scope, element, attrs) {
+  //         var isConversion = attrs.bachConversion;
+  //         var em = EventsManager;
+
+  //         element.on("click", function () {
+  //           if (isConversion) {
+  //             em.trigger("conversion", {
+  //               eventTarget: element.attr("id"),
+  //             });
+  //           }
+  //         });
+  //       },
+  //     };
+  //   })
+  //   .directive("bachCustomEvent", function (EventsManager) {
+  //     return {
+  //       link: function (scope, element, attrs) {
+  //         var isConversion = attrs.bachConversion;
+  //         var em = EventsManager;
+
+  //         element.on("click", function () {
+  //           if (isConversion) {
+  //             em.customEvent(attrs.bachCustomEvent, {
+  //               eventTarget: element.attr("id"),
+  //             });
+  //           }
+  //         });
+  //       },
+  //     };
+  //   })
+  //   .directive("bachPrintImage", function (PrintImage) {
+  //     return {
+  //       link: function (scope, element, attrs) {
+  //         element.on("click", function (e) {
+  //           e.preventDefault();
+  //           PrintImage.open(attrs.bachPrintImage);
+  //         });
+  //       },
+  //     };
+  //   })
+  //   .directive("bachImage", function () {
+  //     return {
+  //       require: "^bachCanvas",
+  //       restrict: "C",
+  //       link: function (scope, element, attrs, Canvas) {
+  //         element[0].onload = function () {
+  //           scope.$apply(function () {
+  //             Canvas.updatePageHeight();
+  //           });
+  //         };
+  //       },
+  //     };
+  //   })
+  .directive("bachActionItemId", function (
+    //EventsManager,
+    $location,
+    $log,
+    $q,
+    $timeout
+  ) {
+    return {
+      require: "^bachCanvas",
+      link: function (scope, element, attrs, ctrl) {
+        var hashId;
+
+        var destroyWatcher = scope.$watch(
+          function () {
+            return ctrl.getId(attrs.bachActionItemId);
+          },
+          function (newVal) {
+            if (newVal) {
+              hashId = newVal;
+              element.attr("href", "#" + hashId);
+              destroyWatcher();
+            }
+          }
+        );
+
+        function smoothScroll(startY, stopY) {
+          var defer = $q.defer();
+
+          var distance = stopY > startY ? stopY - startY : startY - stopY;
+          var speed = Math.round(distance / 100);
+          if (speed >= 20) speed = 20;
+          var step = Math.round(distance / 25);
+          var leapY = stopY > startY ? startY + step : startY - step;
+          var timer = 0;
+
+          $timeout(function () {
+            defer.resolve();
+          }, (distance / step) * speed);
+
+          if (stopY > startY) {
+            for (var i = startY; i < stopY; i += step) {
+              (function (y) {
+                $timeout(function () {
+                  window.scrollTo(0, y);
+                }, timer * speed);
+              })(leapY);
+              //setTimeout("window.scrollTo(0, " + leapY + ")", timer * speed);
+              leapY += step;
+              if (leapY > stopY) leapY = stopY;
+              timer++;
+            }
+          } else {
+            for (var i = startY; i > stopY; i -= step) {
+              (function (y) {
+                $timeout(function () {
+                  window.scrollTo(0, y);
+                }, timer * speed);
+              })(leapY);
+              //setTimeout("window.scrollTo(0, " + leapY + ")", timer * speed);
+              leapY -= step;
+              if (leapY < stopY) leapY = stopY;
+              timer++;
+            }
+          }
+
+          return defer.promise;
+        }
+
+        element.on("click", function (e) {
+          //var element = ctrl.getElement(attrs.bachActionItemId);
+          //var selector = "data-bach-id='" + attrs.bachActionItemId + "'";
+          var selector = '[data-bach-id="' + attrs.bachActionItemId + '"]';
+          var element = document.querySelector(selector);
+          if (element && !attrs.download) {
+            e.preventDefault();
+            //EventsManager.addStreamEvent("scroll", [window.pageYOffset]);
+            smoothScroll(window.pageYOffset, element.offsetTop).then(
+              function () {
+                $location.hash(hashId);
+              }
+            );
+          }
+        });
+      },
+    };
+  })
+  //   .directive("bachId", function () {
+  //     return {
+  //       require: "^bachCanvas",
+  //       link: function (scope, element, attrs, ctrl) {
+  //         ctrl.addId(attrs.bachId, attrs.id);
+  //         ctrl.addElement(attrs.bachId, element);
+  //       },
+  //     };
+  //   })
+  //   .directive("bachVideo", function (
+  //     $window,
+  //     YoutubeAPI,
+  //     $log,
+  //     VimeoAPI,
+  //     WindowIdler,
+  //     EventsManager,
+  //     $q
+  //   ) {
+  //     return {
+  //       link: function (scope, element, attrs) {
+  //         var iframe = element.find("iframe")[0];
+  //         var em = EventsManager;
+
+  //         if (attrs.bachVideoSource == "youtube") {
+  //           YoutubeAPI.onReady(function () {
+  //             var player = new YT.Player(iframe, {
+  //               events: {
+  //                 onReady: function () {
+  //                   em.trigger("videoloaded", {
+  //                     eventTarget: attrs.id,
+  //                     eventData: {
+  //                       duration: player.getDuration(),
+  //                       url: player.getVideoUrl(),
+  //                     },
+  //                   });
+  //                 },
+  //                 onStateChange: function (e) {
+  //                   //-1 (unstarted)
+  //                   //0 (ended)
+  //                   //1 (playing)
+  //                   //2 (paused)
+  //                   //3 (buffering)
+  //                   //5 (video cued)
+  //                   if (e.data == 1) {
+  //                     WindowIdler.stop();
+  //                     em.addStreamEvent(
+  //                       "videoactive",
+  //                       [player.getCurrentTime()],
+  //                       {
+  //                         eventTarget: attrs.id,
+  //                       }
+  //                     );
+  //                   } else if (e.data == 2) {
+  //                     WindowIdler.start();
+  //                     em.addStreamEvent(
+  //                       "videoactive",
+  //                       [player.getCurrentTime()],
+  //                       {
+  //                         eventTarget: attrs.id,
+  //                       }
+  //                     );
+  //                     em.flushStream("videoactive");
+  //                   } else if (e.data == 0) {
+  //                     WindowIdler.start();
+  //                     em.addStreamEvent(
+  //                       "videoactive",
+  //                       [player.getCurrentTime()],
+  //                       {
+  //                         eventTarget: attrs.id,
+  //                       }
+  //                     );
+  //                     em.flushStream("videoactive");
+  //                   }
+  //                 },
+  //               },
+  //             });
+  //           });
+  //         } else {
+  //           VimeoAPI.onReady(function () {
+  //             var player = new Vimeo.Player(iframe);
+
+  //             $q.all([player.getDuration(), player.getVideoUrl()]).then(function (
+  //               results
+  //             ) {
+  //               em.trigger("videoloaded", {
+  //                 eventTarget: attrs.id,
+  //                 eventData: {
+  //                   duration: results[0],
+  //                   url: results[1],
+  //                 },
+  //               });
+  //             });
+
+  //             player.on("play", function (event) {
+  //               em.addStreamEvent("videoactive", [event.seconds], {
+  //                 id: attrs.id,
+  //                 duration: event.duration,
+  //               });
+  //               WindowIdler.stop();
+  //             });
+
+  //             player.on("pause", function (event) {
+  //               em.addStreamEvent("videoactive", [event.seconds], {
+  //                 eventTarget: attrs.id,
+  //               });
+  //               em.flushStream("videoactive");
+  //               WindowIdler.start();
+  //             });
+
+  //             player.on("ended", function (event) {
+  //               em.addStreamEvent("videoactive", [event.seconds], {
+  //                 eventTarget: attrs.id,
+  //               });
+  //               em.flushStream("videoactive");
+  //               WindowIdler.start();
+  //             });
+
+  //             player.on("seeked", function (event) {
+  //               em.addStreamEvent("videoactive", [event.seconds], {
+  //                 eventTarget: attrs.id,
+  //               });
+  //               // Need to log seconds for playback, percentage for reports
+  //               WindowIdler.stop();
+  //             });
+  //           });
+  //         }
+  //       },
+  //     };
+  //   })
+  .directive("bachCanvas", function (
+    $window,
+    $log,
+    $interval,
+    $timeout,
+    $document,
+    $location,
+    //STREAMEVENT_DEFAULTS,
+    //EventsManager,
+    Idler,
+    //Environment,
+    //CheckMobile,
+    WindowIdler
+  ) {
+    return {
+      restrict: "AC",
+      controller: function ($scope, $element) {
+        this.PAGE_HEIGHT = 0;
+        this.background = $element.css("background");
+        this.idMap = {};
+        this.elementMap = {};
+        this.params = $location.search();
+
+        this.updatePageHeight = function () {
+          var PAGE_HEIGHT = 0;
+
+          angular.forEach($element.children(), function (section) {
+            PAGE_HEIGHT += section.offsetHeight;
+          });
+
+          this.PAGE_HEIGHT = PAGE_HEIGHT;
+
+          return this.PAGE_HEIGHT;
+        };
+
+        this.addId = function (permanentId, id) {
+          this.idMap[permanentId] = id;
+        };
+
+        this.addElement = function (permanentId, element) {
+          this.elementMap[permanentId] = element;
+        };
+
+        this.getId = function (permanentId) {
+          return this.idMap[permanentId];
+        };
+
+        this.getElement = function (permanentId) {
+          return this.elementMap[permanentId];
+        };
+
+        this.getPageHeight = function () {
+          return this.updatePageHeight();
+        };
+
+        this.getParams = function () {
+          return this.params;
+        };
+      },
+      link: function (scope, element, attrs, ctrl) {
+        //var MOUSEMOVE_THROTTLE = STREAMEVENT_DEFAULTS.mousemoveResolution;
+        //var SCROLL_THROTTLE = STREAMEVENT_DEFAULTS.scrollResolution;
+        var MOUSEMOVE_THROTTLE = 100;
+        var SCROLL_THROTTLE = 100;
+        //var em = EventsManager;
+        var inputs = element.find("input"),
+          textareas = element.find("textarea"),
+          dropdowns = element.find("select"),
+          anchors = element.find("a");
+        var windowIdler = WindowIdler;
+        var moveIdler = new Idler({ threshold: 500 });
+        var scrollIdler = new Idler({ threshold: 500 });
+        var isIdle = false;
+
+        // if ($location.search().test == "true") {
+        //   element.prepend(
+        //     '<div class="bach-test-stripe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 22"><g><g><path d="M19.62,17.55,14,6.75V2h1a1,1,0,0,0,0-2H5A1,1,0,0,0,5,2H6V6.75L.4,17.51A3,3,0,0,0,3,22H17a3,3,0,0,0,2.62-4.45ZM12,2V7.25L13.43,10H6.57L8,7.25V2Zm5.86,17.5A1,1,0,0,1,17,20H3a1,1,0,0,1-.86-.5,1,1,0,0,1,0-1L5.52,12h9l3.39,6.5A1,1,0,0,1,17.86,19.5ZM10,17a2,2,0,1,1-2-2A2,2,0,0,1,10,17Zm4-2.5A1.5,1.5,0,1,1,12.5,13,1.5,1.5,0,0,1,14,14.5Z"/></g></g></svg>Test Mode: forms & analytics are disabled.  <a href="' +
+        //       $location.absUrl().replace(/(&|\?)test\=true/g, "") +
+        //       '" target="_blank">View Live Version</a></div>'
+        //   );
+        // }
+
+        angular.extend(scope, ctrl.getParams());
+
+        moveIdler.on("idle", function () {
+          $log.debug("-- TIMED FLUSHING MOVE --");
+          // em.flushStream("mousemove");
+        });
+
+        scrollIdler.on("idle", function () {
+          $log.debug("-- TIMED FLUSHING SCROLL --");
+          //em.flushStream("scroll");
+        });
+
+        // em.addStreamBuffers([
+        //   "mousemove",
+        //   "scroll",
+        //   "windowidle",
+        //   "touchmove",
+        //   "inputfocus",
+        //   "videoactive",
+        // ]);
+
+        // Helpers
+        function getEventPageOffset(e) {
+          // version: 1
+          //var xOffset = e.clientX + window.pageXOffset,
+          //    yOffset = e.clientY + window.pageYOffset;
+
+          // version 2
+          var xOffset = e.clientX,
+            yOffset = e.clientY;
+
+          return [xOffset, yOffset];
+        }
+
+        function getPageYOffset(offset) {
+          offset = offset || window.pageYOffset;
+          //return parseFloat(((offset / ctrl.getPageHeight()) * 100).toFixed(1))
+          return offset;
+        }
+
+        var throttleScroll = _.throttle(
+          function (offset) {
+            //em.addStreamEvent("scroll", [getPageYOffset(offset) || 0]);
+            $log.debug("-- SCROLLING --", getPageYOffset());
+          },
+          SCROLL_THROTTLE,
+          {
+            leading: true,
+            trailing: true,
+          }
+        );
+
+        var windowListeners = (function () {
+          //   var leave = _.debounce(function (e) {
+          //     if (e.toElement == null && e.relatedTarget == null) {
+          //       // Flush events
+          //       $log.debug("-- LEAVE FLUSHING --");
+          //       //em.flushAllStreams();
+          //       //idle();
+          //     }
+          //   }, MOUSEMOVE_THROTTLE);
+
+          var active = function () {
+            $log.debug("-- GOING ACTIVE --");
+            if (isIdle) {
+              windowIdler.ping();
+              //em.flushStream("windowidle");
+              isIdle = false;
+            }
+          };
+
+          var idle = function () {
+            $log.debug("-- GOING IDLE --");
+            if (!isIdle) {
+              windowIdler.stop();
+              //em.flushAllStreams(["inputfocus"]).newStreamEvent("windowidle");
+              isIdle = true;
+            }
+          };
+
+          var resize = _.debounce(function (e) {
+            // em.trigger("windowresize", {
+            //   eventTarget: "window",
+            //   eventData: {
+            //     windowWidth: $window.innerWidth,
+            //     windowHeight: $window.innerHeight,
+            //     pageHeight: ctrl.getPageHeight(),
+            //   },
+            // });
+          }, 500);
+
+          var open = function () {
+            windowIdler.start();
+            scrollIdler.start();
+            moveIdler.start();
+
+            // em.trigger("windowopen", {
+            //   eventTarget: "window",
+            //   eventData: {
+            //     windowWidth: $window.innerWidth,
+            //     windowHeight: $window.innerHeight,
+            //     pageHeight: ctrl.getPageHeight(),
+            //     isMobile: CheckMobile(),
+            //     scrollTop: getPageYOffset(),
+            //     version: 2,
+            //   },
+            // });
+          };
+
+          //   var visibilitychange = _.debounce(function () {
+          //     document.hidden ? idle() : active();
+          //   }, MOUSEMOVE_THROTTLE);
+
+          var bind = function () {
+            //window.addEventListener("mouseout", leave, false);
+            // if (!CheckMobile()) {
+            //   window.addEventListener("resize", resize, false);
+            // }
+            window.addEventListener("orientationchange", resize, false);
+            //$document.on("visibilitychange", visibilitychange);
+            //$document.on("webkitvisibilitychange", visibilitychange);
+            //$document.on("mozvisibilitychange", visibilitychange);
+          };
+
+          return {
+            open: open,
+            //leave: leave,
+            active: active,
+            idle: idle,
+            resize: resize,
+            //visibilitychange: visibilitychange,
+            bind: bind,
+          };
+        })();
+
+        var actionListeners = (function () {
+          var linkclick = function (e) {
+            var el = angular.element(this);
+            if (el.attr("href") && el.attr("download")) {
+              //   em.trigger("linkdownload", {
+              //     eventData: {
+              //       href: el.attr("href"),
+              //       name: el.attr("download"),
+              //     },
+              //   });
+            } else if (el.attr("href") && el.attr("href").charAt(0) != "#") {
+              //   em.flushAllStreams();
+              //   em.trigger("linkfollow", {
+              //     eventData: {
+              //       href: el.attr("href"),
+              //     },
+              //   });
+            }
+          };
+
+          var bind = function () {
+            anchors.on("click", linkclick);
+          };
+
+          return {
+            bind: bind,
+            linkclick: linkclick,
+          };
+        })();
+
+        var formListeners = (function () {
+          var inputfocus = function () {
+            var el = angular.element(this);
+            var type = el.attr("type");
+            if (type !== "checkbox" && type !== "radio") {
+              //   em.newStreamEvent("inputfocus", null, {
+              //     eventTarget: "input#" + el.attr("id"),
+              //   });
+              windowIdler.stop();
+            } else {
+              //   em.trigger("inputselected", {
+              //     eventTarget: "input#" + el.attr("id"),
+              //     eventData: {
+              //       value: el.val(),
+              //       type: type,
+              //     },
+              //   });
+              windowIdler.ping();
+            }
+          };
+          var inputblur = function () {
+            var el = angular.element(this);
+            var type = el.attr("type");
+            if (type !== "checkbox" && type !== "radio") {
+              //   em.flushStream("inputfocus");
+              //   em.trigger("inputblur", {
+              //     eventTarget: "input#" + el.attr("id"),
+              //     eventData: {
+              //       type: type,
+              //       value: el.val(),
+              //     },
+              //   });
+            }
+            windowIdler.start();
+          };
+
+          var dropdownchange = function () {
+            var el = angular.element(this);
+            // em.trigger("inputselected", {
+            //   eventTarget: "input#" + el.attr("id"),
+            //   eventData: {
+            //     value: el.val(),
+            //     type: "dropdown",
+            //   },
+            // });
+            windowIdler.ping();
+          };
+
+          var bind = function () {
+            inputs.on("focus", inputfocus);
+            inputs.on("blur", inputblur);
+            textareas.on("focus", inputfocus);
+            textareas.on("blur", inputblur);
+            dropdowns.on("change", dropdownchange);
+          };
+
+          return {
+            inputfocus: inputfocus,
+            inputblur: inputblur,
+            dropdownchange: dropdownchange,
+            bind: bind,
+          };
+        })();
+
+        var mouseListeners = (function () {
+          var mousemove = _.throttle(
+            function (e) {
+              //em.addStreamEvent("mousemove", getEventPageOffset(e));
+              windowIdler.ping();
+              moveIdler.ping();
+              //$log.debug("-- MOUSEMOVING --", getEventPageOffset(e));
+            },
+            MOUSEMOVE_THROTTLE,
+            {
+              leading: true,
+              trailing: true,
+            }
+          );
+
+          var mouseclick = function (e) {
+            // em.trigger("click", {
+            //   eventTarget: e.target.id,
+            //   eventData: {
+            //     location: getEventPageOffset(e),
+            //   },
+            // });
+            // em.flushStream("touchmove");
+            // em.flushStream("mousemove");
+            // em.flushStream("scroll");
+            windowIdler.ping();
+          };
+
+          var bind = function () {
+            $document.on("mousemove", mousemove);
+            $document.on("click", mouseclick);
+          };
+
+          var destroy = function () {
+            $document.off("mousemove", mousemove);
+            $document.off("click", mouseclick);
+          };
+
+          return {
+            mousemove: mousemove,
+            mouseclick: mouseclick,
+            destroy: destroy,
+            bind: bind,
+          };
+        })();
+
+        var touchListeners = (function () {
+          // Mobile Events
+          // 1.  Scroll - Stream Event - [time offset, pageYOffset]
+          // 2.  Tap - Discrete Event
+          // 3.  Touchmove - Stream Event - [time offset, x%, y%]
+
+          var touchEv, touchStart;
+          var isScrolling, touchStartTime;
+
+          var touchstart = function (e) {
+            var event = e.originalEvent || e;
+            touchEv = event.touches[0];
+            touchStart = window.pageYOffset;
+            //touchStartTime = Date.now();
+
+            mouseListeners.destroy();
+            windowIdler.ping();
+          };
+
+          var touchmoveScroll = function (e) {
+            if (Math.abs(window.pageYOffset - touchStart) > 1) {
+              if (!isScrolling) {
+                isScrolling = true;
+                throttleScroll(touchStart);
+              } else {
+                throttleScroll();
+              }
+            }
+
+            windowIdler.ping();
+            scrollIdler.ping();
+          };
+
+          var touchmove = _.throttle(
+            function (e) {
+              var event = e.originalEvent || e;
+              var touchEv = event.touches[0];
+              //em.addStreamEvent("touchmove", getEventPageOffset(touchEv));
+              windowIdler.ping();
+            },
+            MOUSEMOVE_THROTTLE,
+            {
+              leading: true,
+              trailing: true,
+            }
+          );
+
+          var touchend = function (e) {
+            if (Date.now() - touchStartTime < 600 && !isScrolling) {
+              //   em.trigger("tap", {
+              //     eventData: {
+              //       location: getEventPageOffset(touchEv),
+              //     },
+              //   });
+            }
+
+            touchListeners.isScrolling(false);
+            //em.flushStream("touchmove");
+            windowIdler.ping();
+          };
+
+          var bind = function () {
+            $document.on("touchstart", touchstart);
+            $document.on("touchmove", touchmoveScroll);
+            $document.on("touchmove", touchmove);
+            $document.on("touchend", touchend);
+          };
+
+          var destroy = function () {
+            $document.off("touchstart", touchstart);
+            $document.off("touchmove", touchmoveScroll);
+            $document.off("touchmove", touchmove);
+            $document.off("touchend", touchend);
+          };
+
+          return {
+            touchstart: touchstart,
+            touchend: touchend,
+            touchmove: touchmove,
+            scroll: touchmoveScroll,
+            isScrolling: function (val) {
+              isScrolling = val;
+            },
+            destroy: destroy,
+            bind: bind,
+          };
+        })();
+
+        var commonListeners = (function (touchListeners) {
+          var scroll = function (e) {
+            throttleScroll();
+            windowIdler.ping();
+            scrollIdler.ping();
+          };
+
+          var bind = function () {
+            $document.on("scroll", scroll);
+          };
+
+          return {
+            scroll: scroll,
+            bind: bind,
+          };
+        })(touchListeners);
+
+        windowIdler.on("idle", function () {
+          $log.debug("Window is Idle");
+          windowListeners.idle();
+        });
+
+        windowIdler.on("resume", function () {
+          windowListeners.active();
+        });
+
+        // Window Events
+        windowListeners.bind();
+
+        // Touch Events
+        touchListeners.bind();
+
+        // Mouse Events
+        mouseListeners.bind();
+
+        // Common Events
+        commonListeners.bind();
+
+        // Form Events
+        formListeners.bind();
+
+        // Form Events
+        actionListeners.bind();
+
+        $timeout(windowListeners.open, 10);
+        $timeout(function () {});
+      },
+    };
+  });

@@ -1,0 +1,134 @@
+angular
+  .module("rv.directives")
+  .directive("bachBackgroundVideo", function (YoutubeAPI, $timeout, $log) {
+    console.log("backgroundVideo");
+    return {
+      restrict: "A",
+      controller: function ($scope, $element) {
+        var ASPECT_RATIO = 9 / 16;
+        var self = this;
+
+        this.init = function (videoId, guid) {
+          this.guid = guid;
+          this.addPlayer(videoId);
+        };
+
+        this.resizeIframe = function () {
+          var currentAspectRatio = Math.max(
+            ($element.height() / $element.width()) * 100,
+            ASPECT_RATIO * 100
+          );
+          if (currentAspectRatio > ASPECT_RATIO * 100) {
+            self.containerEl.css({
+              paddingTop: currentAspectRatio + "%",
+              marginLeft:
+                ($element.width() - $element.height() * (1 / ASPECT_RATIO)) / 2,
+              marginRight:
+                ($element.width() - $element.height() * (1 / ASPECT_RATIO)) / 2,
+              position: "relative",
+              height: 0,
+            });
+          } else {
+            self.containerEl.css({
+              paddingTop: ASPECT_RATIO * 100 + "%",
+              marginLeft: "",
+              marginRight: "",
+              position: "relative",
+              height: 0,
+            });
+          }
+        };
+
+        this.initYoutube = function () {
+          self.player = new YT.Player(self.guid, {
+            videoId: self.videoId,
+            playerVars: {
+              autoplay: 1, // Auto-play the video on load
+              controls: 0, // Show pause/play buttons in player
+              showinfo: 0, // Hide the video title
+              modestbranding: 1, // Hide the Youtube Logo
+              fs: 0,
+              cc_load_policy: 0,
+              iv_load_policy: 3,
+            },
+            events: {
+              onReady: function (e) {
+                //console.log("onReady: ", e);
+                self.resizeIframe();
+                e.target.mute();
+                e.target.playVideo();
+              },
+              onStateChange: function (e) {
+                //-1 (unstarted)
+                //0 (ended)
+                //1 (playing)
+                //2 (paused)
+                //3 (buffering)
+                //5 (video cued)
+                if (e.data == 1) {
+                  //console.log("self.opacity: ", self.opacity);
+                  //console.log("e.target: ", e.target);
+                  if (e.target.h && typeof e.target.h !== "number") {
+                    TweenMax.to(e.target.h, 0.2, {
+                      opacity: self.opacity,
+                    });
+                  }
+                  if (e.target.a && typeof e.target.a !== "number") {
+                    TweenMax.to(e.target.a, 0.2, {
+                      opacity: self.opacity,
+                    });
+                  }
+                } else if (e.data == 0) {
+                  self.player.seekTo(0);
+                }
+              },
+            },
+          });
+        };
+
+        this.addPlayer = function (videoId) {
+          if (!this.hasPlayer) {
+            this.videoId = videoId;
+            this.opacity = $element[0].style.opacity || 1;
+            this.containerEl = angular.element("<div></div>");
+            this.iframeEl = angular.element(
+              '<div id="' + this.guid + '"></div>'
+            );
+            $element.append(this.containerEl);
+            this.containerEl.append(this.iframeEl);
+            //this.iframeEl.css({ opacity: 0 });
+
+            this.destroyResizeWatcher = $scope.$watch(function () {
+              return $element.width() + $element.height();
+            }, _.debounce(this.resizeIframe, 100));
+
+            if (YoutubeAPI.initialized) {
+              this.initYoutube();
+            } else {
+              YoutubeAPI.init();
+              YoutubeAPI.onReady(this.initYoutube);
+            }
+          }
+
+          this.hasPlayer = true;
+        };
+
+        this.removePlayer = function () {
+          if (self.hasPlayer) {
+            self.containerEl.remove();
+            self.iframeEl.remove();
+            self.player.destroy();
+            self.destroyResizeWatcher();
+            self.hasPlayer = false;
+          }
+        };
+
+        this.destroy = function () {
+          self.removePlayer();
+        };
+      },
+      link: function (scope, element, attrs, ctrl) {
+        ctrl.init(attrs.bachBackgroundVideo, attrs.bachBackgroundGuid);
+      },
+    };
+  });

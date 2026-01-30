@@ -1,0 +1,24 @@
+// angular.module('rv.services')
+//     .provider('BachPaths', function () {
+
+//         var basePath = '/core/templates/';
+
+//         var paths = {
+//             templates: {
+//                 modal: basePath + 'core.templates.modal.html',
+//                 formSubmissionResponse: basePath + 'core.templates.partial.form-submission-response.html',
+//                 claimOffer: basePath + 'core.templates.partial.claim-offer.html',
+//                 freePlanBadgeIcon: basePath + 'core.templates.partial.free-plan-badge-icon.svg'
+//             }
+//         };
+
+//         return {
+//             get: function () {
+//                 return paths;
+//             },
+//             $get: function () {
+//                 return paths;
+//             }
+//         };
+
+//     });

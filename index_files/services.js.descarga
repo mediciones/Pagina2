@@ -1,0 +1,655 @@
+angular
+  .module("rv.services", [])
+  .service("VimeoAPI", function ($window, $rootScope, $document) {
+    var self = this;
+    this.onReadyFns = [];
+
+    this.onLoad = function () {
+      $rootScope.$apply();
+      self.initialized = true;
+      angular.forEach(self.onReadyFns, function (callback) {
+        callback();
+      });
+    };
+
+    this.init = function () {
+      if (!this.initialized) {
+        var tag = $document[0].createElement("script");
+        tag.src = "https://player.vimeo.com/api/player.js";
+
+        var firstScriptTag = $document[0].getElementsByTagName("script")[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        tag.onload = self.onLoad;
+      }
+    };
+
+    this.onReady = function (subscriber) {
+      this.onReadyFns.push(subscriber.bind(this));
+    };
+  })
+  .service("QueryParams", function () {
+    this.replace = function (param, newval, search) {
+      var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+      var query = search.replace(regex, "$1").replace(/&$/, "");
+
+      return (
+        (query.length > 2 ? query + "&" : "?") +
+        (newval ? param + "=" + newval : "")
+      );
+    };
+  })
+  .service("YoutubeAPI", function ($window, $rootScope, $document) {
+    var self = this;
+    this.onReadyFns = [];
+
+    $window.onYouTubeIframeAPIReady = function () {
+      console.log("onYoutubeIframeAPIReady");
+      $rootScope.$apply();
+      self.initialized = true;
+      angular.forEach(self.onReadyFns, function (callback) {
+        callback();
+      });
+    };
+
+    this.init = function () {
+      console.log(
+        "YoutubeAPI Service init called: initialized?: ",
+        this.initialized
+      );
+      if (!this.initialized) {
+        var tag = $document[0].createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = $document[0].getElementsByTagName("script")[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+    };
+
+    this.onReady = function (subscriber) {
+      console.log("onReady called: ", subscriber);
+      this.onReadyFns.push(subscriber.bind(this));
+    };
+
+    this.init();
+  })
+  .factory("WindowIdler", function (Idler) {
+    return new Idler({ threshold: 5000 });
+  })
+  //   .factory("CheckMobile", function () {
+  //     return function () {
+  //       if (window.matchMedia) {
+  //         return window.matchMedia(
+  //           "only screen and (min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3), screen and (device-width: 320px) and (device-height: 640px) and (-webkit-device-pixel-ratio: 2), screen and (device-width: 320px) and (device-height: 640px) and (-webkit-device-pixel-ratio: 3), screen and (device-width: 360px) and (device-height: 640px) and (-webkit-device-pixel-ratio: 3), screen and (device-width: 360px) and (device-height: 640px) and (-webkit-device-pixel-ratio: 3)"
+  //         ).matches;
+  //       } else {
+  //         return false;
+  //       }
+  //     };
+  //   })
+  //   .service("PrintImage", function () {
+  //     function ImagetoPrint(source) {
+  //       return (
+  //         "<html><head><script>function step1(){\n" +
+  //         "setTimeout('step2()', 10);}\n" +
+  //         "function step2(){window.print();window.close()}\n" +
+  //         "</script></head><body onload='step1()'>\n" +
+  //         "<img src='" +
+  //         source +
+  //         "' /></body></html>"
+  //       );
+  //     }
+
+  //     this.open = function (source) {
+  //       var pwa = window.open("about:blank", "_new");
+  //       pwa.document.open();
+  //       pwa.document.write(ImagetoPrint(source));
+  //       pwa.document.close();
+  //     };
+  //   })
+  //   .factory("CookieToJson", function () {
+  //     return function (cookie) {
+  //       cookie = cookie || "";
+  //       var obj = {},
+  //         kvPairs = cookie.split(";");
+
+  //       angular.forEach(kvPairs, function (kv) {
+  //         kv = kv || "";
+  //         var kvArr = kv.split("=");
+  //         obj[kvArr[0]] = kvArr[1];
+  //       });
+
+  //       return obj;
+  //     };
+  //   })
+  //   .value("STREAMEVENT_DEFAULTS", {
+  //     mousemoveResolution: 100, // in milliseconds
+  //     scrollResolution: 100, // in milliseconds
+  //     capacity: 50,
+  //     guid: 0,
+  //   })
+  //   .factory("BuildUrl", function () {
+  //     function encodeUriQuery(val, pctEncodeSpaces) {
+  //       return encodeURIComponent(val)
+  //         .replace(/%40/gi, "@")
+  //         .replace(/%3A/gi, ":")
+  //         .replace(/%24/g, "$")
+  //         .replace(/%2C/gi, ",")
+  //         .replace(/%3B/gi, ";")
+  //         .replace(/%20/g, pctEncodeSpaces ? "%20" : "+");
+  //     }
+
+  //     return function buildUrl(url, params) {
+  //       if (!params) return url;
+  //       var parts = [];
+  //       angular.forEach(params, function (value, key) {
+  //         if (value === null || angular.isUndefined(value)) return;
+  //         if (!angular.isArray(value)) value = [value];
+
+  //         angular.forEach(value, function (v) {
+  //           if (angular.isObject(v)) {
+  //             if (angular.isDate(v)) {
+  //               v = v.toISOString();
+  //             } else {
+  //               v = angular.toJson(v);
+  //             }
+  //           }
+  //           parts.push(encodeUriQuery(key) + "=" + encodeUriQuery(v));
+  //         });
+  //       });
+  //       if (parts.length > 0) {
+  //         url += (url.indexOf("?") == -1 ? "?" : "&") + parts.join("&");
+  //       }
+  //       return url;
+  //     };
+  //   })
+  .factory("Idler", function ($interval) {
+    var Idler = function (data) {
+      data = data || {};
+
+      this.interval = data.interval || 1000;
+      this.threshold = data.threshold || 5000;
+      this.lastPing = new Date();
+      this.isIdle = false;
+
+      this.listeners = {};
+    };
+
+    // Events : ['idle', 'resume']
+    Idler.prototype.on = function (eventName, callback) {
+      if (angular.isArray(this.listeners[eventName])) {
+        this.listeners[eventName].push(callback);
+      } else {
+        this.listeners[eventName] = [callback];
+      }
+    };
+
+    Idler.prototype.off = function (eventName, callback) {
+      if (angular.isArray(this.listeners[eventName])) {
+        var index = this.listeners[eventName].indexOf(callback);
+
+        if (~index) {
+          this.listeners[eventName].splice(index, 1);
+        }
+      }
+    };
+
+    Idler.prototype.broadcast = function (eventName, params) {
+      var listeners = this.listeners[eventName];
+      if (listeners && listeners.length) {
+        angular.forEach(
+          listeners,
+          function (callback) {
+            callback(params);
+          },
+          this
+        );
+      }
+    };
+
+    Idler.prototype.ping = function () {
+      this.lastPing = new Date();
+
+      if (this.isIdle) {
+        this.isIdle = false;
+        this.broadcast("resume");
+      }
+      this.start();
+    };
+
+    Idler.prototype.start = function () {
+      var self = this;
+      if (!this.pollPromise) {
+        this.lastPing = new Date();
+        this.pollPromise = $interval(function () {
+          var now = new Date().getTime();
+          if (now - self.lastPing.getTime() > self.threshold && !self.isIdle) {
+            self.isIdle = true;
+            self.broadcast("idle");
+          }
+        }, this.interval);
+      }
+    };
+
+    Idler.prototype.stop = function () {
+      if (this.pollPromise) {
+        $interval.cancel(this.pollPromise);
+      }
+      this.pollPromise = null;
+      this.isIdle = true;
+    };
+
+    return Idler;
+  });
+//   .factory("EventsManager", function (
+//     DiscreteEvent,
+//     StreamEvent,
+//     StreamEventBuffer,
+//     CustomEvent
+//   ) {
+//     function EventsManager(data) {
+//       data = data || {};
+//       this.streamBuffers = {};
+//       this.activeStreams = {};
+//     }
+
+//     EventsManager.prototype.addStreamBuffers = function (eventTypes) {
+//       for (var i = 0; i < eventTypes.length; i++) {
+//         var ev = eventTypes[i];
+//         this.streamBuffers[ev] = new StreamEventBuffer({ eventType: ev });
+//       }
+//     };
+
+//     EventsManager.prototype.trigger = function (eventType, eventData) {
+//       var discreteEvent = new DiscreteEvent(
+//         angular.extend(
+//           {
+//             eventType: eventType,
+//           },
+//           eventData
+//         )
+//       );
+
+//       discreteEvent.save();
+
+//       return this;
+//     };
+
+//     EventsManager.prototype.customEvent = function (eventId, eventData) {
+//       var customEvent = new CustomEvent(
+//         angular.extend(
+//           {
+//             eventTypeId: eventId,
+//           },
+//           eventData
+//         )
+//       );
+
+//       customEvent.save();
+
+//       return this;
+//     };
+
+//     EventsManager.prototype.newStreamEvent = function (
+//       eventType,
+//       eventData,
+//       eventMeta,
+//       round
+//     ) {
+//       var streamBuffer = this.streamBuffers[eventType];
+
+//       this.flushStream(eventType);
+//       this.activeStreams[eventType] = streamBuffer.newEvent(eventMeta);
+
+//       if (eventData) {
+//         this.activeStreams[eventType].addData(eventData, round);
+//       }
+
+//       return this.activeStreams[eventType];
+//     };
+
+//     EventsManager.prototype.addStreamEvent = function (
+//       eventType,
+//       eventData,
+//       eventMeta,
+//       round
+//     ) {
+//       var streamBuffer = this.streamBuffers[eventType],
+//         activeStream = this.activeStreams[eventType];
+
+//       if (!streamBuffer) {
+//         throw new Error("Could not find stream buffer:", eventType);
+//       }
+
+//       if (activeStream) {
+//         if (activeStream.isFull()) {
+//           this.flushStream(eventType);
+//           this.newStreamEvent(eventType, eventData, eventMeta, round);
+//         } else if (eventData) {
+//           activeStream.addData(eventData, round);
+//         }
+//       } else {
+//         activeStream = this.newStreamEvent(eventType, eventData, eventMeta);
+//       }
+
+//       return activeStream;
+//     };
+
+//     EventsManager.prototype.flushStream = function (eventType) {
+//       var streamBuffer = this.streamBuffers[eventType];
+
+//       if (streamBuffer) {
+//         this.activeStreams[eventType] = streamBuffer.flush();
+//       }
+
+//       return this;
+//     };
+
+//     EventsManager.prototype.flushAllStreams = function (exceptions) {
+//       angular.forEach(
+//         this.streamBuffers,
+//         function (streamBuffer, eventType) {
+//           if (
+//             (angular.isArray(exceptions) && !~exceptions.indexOf(eventType)) ||
+//             !exceptions
+//           ) {
+//             this.flushStream(eventType);
+//           }
+//         },
+//         this
+//       );
+
+//       return this;
+//     };
+
+//     return new EventsManager();
+//   })
+//   .factory("EventFactory", function ($http, $q, Environment, $log, $location) {
+//     // discrete-event or conversion-event
+//     return function (type) {
+//       var Event = function (data) {
+//           this.eventData = data.eventData || {};
+//           this.startDate = new Date().toISOString();
+//           this.endDate = this.startDate;
+//           this.eventTarget = data.eventTarget;
+//           if (data.eventType) {
+//             this.eventType = data.eventType;
+//           } else if (data.eventTypeId) {
+//             this.eventTypeId = data.eventTypeId;
+//           }
+//         },
+//         proto = {
+//           save: function () {
+//             var defer = $q.defer();
+//             //   self = this,
+//             //   path = Environment.path + "/" + type,
+//             //   config = _.extend(
+//             //     {
+//             //       params: {
+//             //         sessionId: Environment.sessionId,
+//             //       },
+//             //     },
+//             //     Environment.config
+//             //   ),
+//             //   body;
+
+//             // if (!this.$$isSaving && $location.search().test != "true") {
+//             //   body = angular.toJson(this);
+//             //   this.$$isSaving = true;
+
+//             //   //   $http.post(path, body, config).then(
+//             //   //     function (response) {
+//             //   //       self.$$isSaving = false;
+//             //   //       $log.debug("[DiscreteEvent] Save", self.eventType, self);
+//             //   //       defer.resolve(response);
+//             //   //     },
+//             //   //     function (response) {
+//             //   //       self.$$isSaving = false;
+//             //   //       $log.error("[DiscreteEvent] Fail", self);
+//             //   //       defer.reject(response);
+//             //   //     }
+//             //   //   );
+//             // } else {
+//             //   defer.reject();
+//             // }
+
+//             return defer.promise;
+//           },
+//         };
+
+//       Event.prototype = angular.extend({}, proto);
+
+//       return Event;
+//     };
+//   })
+//   .factory("DiscreteEvent", function (
+//     $http,
+//     $q,
+//     Environment,
+//     $log,
+//     EventFactory
+//   ) {
+//     return EventFactory("discrete-events");
+//   })
+//   .factory("CustomEvent", function (EventFactory) {
+//     return EventFactory("custom-events");
+//   })
+//   .factory("StreamEvent", function (
+//     $http,
+//     $q,
+//     Environment,
+//     BuildUrl,
+//     STREAMEVENT_DEFAULTS,
+//     $log,
+//     $document,
+//     $timeout,
+//     $location
+//   ) {
+//     function diffStr(base, contender) {
+//       var diff = {};
+//       for (var i = 0; i < Math.max(base.length, contender.length); i++) {
+//         var baseChar = base.charAt(i),
+//           contenderChar = contender.charAt(i);
+
+//         if (baseChar != contenderChar) {
+//           diff.baseChar = isNaN(base.charCodeAt(i)) ? "Not Present" : baseChar;
+//           diff.baseCharBinary = isNaN(base.charCodeAt(i))
+//             ? "Not Present"
+//             : base.charCodeAt(i).toString(2);
+//           diff.contenderChar = contenderChar;
+//           diff.contenderCharBinary = contender.charCodeAt(i).toString(2);
+//           diff.index = i;
+//         }
+//       }
+
+//       return diff;
+//     }
+
+//     function toBinaryStr(str) {
+//       var binStr = "";
+
+//       for (var i = 0; i < str.length; i++) {
+//         binStr += str.charCodeAt(i).toString(2);
+//       }
+
+//       return binStr;
+//     }
+
+//     var StreamEvent = function (data) {
+//         if (Environment.name == "mock") {
+//           this.id = ++STREAMEVENT_DEFAULTS.guid;
+//         }
+//         this.eventData = data.eventData || [];
+//         this.startDate = data.date || new Date();
+//         this.endDate = null;
+//         this.eventType = data.eventType;
+//         this.eventTarget = data.eventTarget;
+//         this.$$corruptCount = data.$$corruptCount || 0;
+//         this.$$originalId = data.$$originalId;
+//       },
+//       proto = {
+//         save: function () {
+//           var defer = $q.defer(),
+//             self = this,
+//             path = Environment.path + "/stream-events",
+//             body = "";
+
+//           if (!this.$$isSaving && $location.search().test != "true") {
+//             this.endDate = this.endDate || new Date();
+
+//             if (self.eventData && self.eventData.length) {
+//               body = LZString.compressToEncodedURIComponent(
+//                 angular.toJson(self.eventData)
+//               );
+//             }
+
+//             this.$$isSaving = true;
+//             $http({
+//               method: "POST",
+//               url: path,
+//               headers: {
+//                 "Content-Type": "application/octet-stream",
+//               },
+//               params: {
+//                 sessionId: Environment.sessionId,
+//                 startDate: self.startDate.toISOString(),
+//                 endDate: self.endDate.toISOString(),
+//                 eventType: self.eventType,
+//                 eventTarget: self.eventTarget,
+//               },
+//               data: body,
+//               transformRequest: [],
+//             }).then(
+//               function (response) {
+//                 self.$$isSaving = false;
+//                 self.id = response.data.id;
+//                 $log.debug("[StreamEvent Save]", self.eventType, self);
+//                 defer.resolve(self);
+//               },
+//               function () {
+//                 self.$$isSaving = false;
+//                 $log.debug("[StreamEvent Fail]", self.eventType, self);
+//                 defer.reject();
+//               }
+//             );
+//           } else {
+//             defer.reject();
+//           }
+
+//           return defer.promise;
+//         },
+//         addData: function (streamData, round) {
+//           if (angular.isArray(streamData)) {
+//             //console.log(this.getTimeOffset(round) , this);
+//             this.eventData.push(streamData.concat([this.getTimeOffset(round)]));
+//           } else {
+//             throw new Error(
+//               "Cannot add non array stream data to:",
+//               this.eventType
+//             );
+//           }
+//         },
+//         isFull: function () {
+//           return (
+//             this.eventData &&
+//             this.eventData.length === STREAMEVENT_DEFAULTS.capacity
+//           );
+//         },
+//         getTimeOffset: function (round) {
+//           return parseFloat(
+//             ((Date.now() - new Date(this.startDate).getTime()) / 1000).toFixed(
+//               round || 1
+//             )
+//           );
+//         },
+//       };
+
+//     StreamEvent.prototype = angular.extend({}, proto);
+
+//     return StreamEvent;
+//   })
+//   .factory("StreamEventBuffer", function (StreamEvent, Idler) {
+//     var StreamEventBuffer = function (data) {
+//         this.eventType = data.eventType;
+//         this.buffer = [];
+//         this.idler = new Idler({ threshold: 5000 });
+//       },
+//       proto = {
+//         addEvent: function (e) {
+//           if (e instanceof StreamEvent && e.eventType == this.eventType) {
+//             this.buffer.push(e);
+//             return e;
+//           } else {
+//             throw new Error("Event must be type StreamEvent." + this.eventType);
+//           }
+//         },
+//         newEvent: function (data) {
+//           var event = this.addEvent(
+//             new StreamEvent(
+//               angular.extend({}, data || {}, {
+//                 eventType: this.eventType,
+//               })
+//             )
+//           );
+
+//           return event;
+//         },
+//         removeEvent: function (e) {
+//           var index = this.buffer.indexOf(e);
+
+//           if (~index) {
+//             this.buffer.splice(index, 1);
+//           }
+
+//           return index;
+//         },
+//         length: function () {
+//           return this.buffer.length;
+//         },
+//         flush: function () {
+//           var self = this;
+//           angular.forEach(this.buffer, function (event) {
+//             event.save().then(function (response) {
+//               self.removeEvent(event);
+//             });
+//           });
+
+//           return null;
+//         },
+//       };
+
+//     StreamEventBuffer.prototype = angular.extend({}, proto);
+
+//     return StreamEventBuffer;
+//   })
+//   .service("CSS", function () {
+//     this.set = function (element, property, style) {
+//       var arrStyles = element.attr("style").split(";"),
+//         isReplaced = false,
+//         newStyles;
+//       for (var i = 0; i < arrStyles.length; i++) {
+//         var currStyle = arrStyles[i];
+//         if (currStyle && currStyle.split(":")[0] == property) {
+//           arrStyles[i] = property + ":" + style;
+//           isReplaced = true;
+//           break;
+//         }
+//       }
+
+//       newStyles = isReplaced
+//         ? arrStyles.join(";")
+//         : element.attr("style") + property + ":" + style + ";";
+//       element.attr("style", newStyles);
+//     };
+//   })
+//   .service("DocumentUtil", function ($document) {
+//     var document = $document[0];
+
+//     this.setTitle = function (title) {
+//       document.title = title;
+//     };
+//   })
+//   .factory("HeatMap", function () {
+//     var HeatMap = function (data) {},
+//       proto = {};
+
+//     return HeatMap;
+//   });

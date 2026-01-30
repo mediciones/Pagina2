@@ -1,0 +1,7 @@
+angular.module("rv.app").controller("AppCtrl", function ($scope, $timeout) {
+  $scope.LL_INFO = window.LL_INFO;
+
+  $timeout(function () {
+    $scope.pageLoaded = true;
+  }, 200);
+});

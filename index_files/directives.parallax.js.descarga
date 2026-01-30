@@ -1,0 +1,99 @@
+angular
+  .module("rv.directives")
+  .directive("bachParallax", function ($window, $document, $interval) {
+    return {
+      link: function (scope, element, attrs) {
+        var sizeOffset;
+        var offsetParent = element.offsetParent();
+        var mobileInterval;
+
+        function getElementPosition() {
+          return {
+            top: offsetParent.offset().top,
+            height: offsetParent.outerHeight(),
+          };
+        }
+
+        function getScrollPosition() {
+          return {
+            top: window.pageYOffset,
+            height: window.innerHeight,
+          };
+        }
+
+        function getVisibilityPercentage() {
+          var elementPosition = getElementPosition();
+          var scrollPosition = getScrollPosition();
+          return (
+            (scrollPosition.top +
+              scrollPosition.height -
+              elementPosition.top -
+              15) /
+            (elementPosition.height + scrollPosition.height)
+          );
+        }
+
+        function setPosition() {
+          var percentage = getVisibilityPercentage();
+
+          if (percentage >= 0 && percentage <= 1) {
+            TweenMax.to(element, 0.1, {
+              y: percentage * 2 * sizeOffset - sizeOffset,
+            });
+          }
+        }
+
+        function initPosition() {
+          var percentage = getVisibilityPercentage();
+
+          if (percentage >= 0 && percentage <= 1) {
+            TweenMax.set(element, {
+              y: percentage * 2 * sizeOffset - sizeOffset,
+            });
+          }
+        }
+
+        function handleTouchstart() {
+          $document.off("scroll", setPosition);
+          setPosition();
+        }
+
+        function handleTouchmove() {
+          setPosition();
+
+          if (!mobileInterval) {
+            mobileInterval = $interval(function () {
+              setPosition();
+            }, 40);
+            $document.on("scroll", handleScrollStop);
+          }
+        }
+
+        var handleScrollStop = _.debounce(function () {
+          if (mobileInterval) {
+            setPosition();
+            $document.off("scroll", handleScrollStop);
+            $interval.cancel(mobileInterval);
+            mobileInterval = null;
+          }
+        }, 1000);
+
+        function init(size) {
+          sizeOffset = parseInt(size, 10);
+          initPosition();
+
+          if (sizeOffset) {
+            scope.$watch(function () {
+              return element.height();
+            }, initPosition);
+
+            $document.on("scroll", setPosition);
+            $document.on("touchstart", handleTouchstart);
+            $document.on("touchmove", handleTouchmove);
+          }
+        }
+
+        init(attrs.bachParallax);
+      },
+    };
+  });

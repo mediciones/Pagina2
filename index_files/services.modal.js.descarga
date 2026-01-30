@@ -1,0 +1,123 @@
+// angular.module('rv.services')
+//     .service('BachModal', function ($compile, $document, $animate,
+//                                     $templateCache, $timeout,
+//                                     DocumentUtil, BachPaths, $rootScope,
+//                                     $controller, $q) {
+//         var body = $document.find('body');
+//         this.modals = [];
+
+//         function BachModal (options, parent) {
+//             var self = this;
+//             options = options || {};
+//             this.options = options;
+//             this.$scope = $rootScope.$new();
+//             this.modalEl = angular.element($templateCache.get(BachPaths.templates.modal));
+//             this.maskEl = angular.element('<div class="bach-modal__mask"></div>');
+//             this.bodyEl = angular.element($templateCache.get(options.templateUrl));
+//             this.documentTitle = options.documentTitle;
+//             this.hasDocumentTitle = !!options.documentTitle;
+//             this.controller = options.controller || angular.noop;
+//             this.hasOnCloseHandler = angular.isFunction(options.onClose);
+//             this.$$parent = parent;
+//             this.handleEscKey = this._handleEscKey.bind(this);
+//             this.handleMaskClick = this._handleMaskClick.bind(this);
+//         }
+
+//         var proto = {
+//             enter: function () {
+//                 var self = this;
+//                 this.defer = $q.defer();
+//                 body.append(this.modalEl);
+
+//                 this.bindHandlers();
+
+//                 $compile(this.modalEl)(
+//                     angular.extend(this.$scope, {
+//                         close: function () {
+//                             self.close();
+//                         }
+//                     }));
+
+//                 $compile(this.bodyEl)(this.$scope);
+
+//                 $controller(self.controller, {
+//                     $scope: self.$scope,
+//                     $modalInstance: self
+//                 });
+
+//                 $timeout(function () {
+//                     $animate.enter(self.maskEl, self.modalEl);
+//                     $animate.enter(self.bodyEl, self.modalEl);
+//                 }, 0);
+
+//                 if (this.hasDocumentTitle) {
+//                     DocumentUtil.setTitle(this.documentTitle);
+//                 }
+
+//                 return this.defer.promise;
+//             },
+//             close: function () {
+//                 var self = this;
+//                 if (!this.closing) {
+//                     this.closing = true;
+
+//                     $q.all([$animate.leave(self.maskEl), $animate.leave(self.bodyEl)])
+//                         .then(function () {
+//                             self.closing = false;
+//                             self.destroy();
+//                             self.defer.resolve();
+//                         });
+//                 }
+//             },
+//             destroy: function () {
+//                 this.destroyHandlers();
+//                 this.modalEl.remove();
+//                 this.$$parent.remove(this);
+//                 this.$scope.$destroy();
+//             },
+//             bindHandlers: function () {
+//                 this.maskEl.on('click', this.handleMaskClick);
+//                 $document.on('keydown', this.handleEscKey);
+//             },
+//             destroyHandlers: function () {
+//                 $document.off('keydown', this.handleEscKey);
+//                 this.maskEl.off('click', this.handleMaskClick);
+//             },
+//             _handleMaskClick: function (event) {
+//                 this.close();
+//             },
+//             _handleEscKey: function (event) {
+//                 if (event.keyCode == 27) {
+//                     this.close();
+//                 }
+//             }
+//         };
+
+//         BachModal.prototype = proto;
+
+//         /*
+//          BACH MODAL PUBLIC API
+//          */
+//         this.open = function (options, exclusive) {
+//             var newModal = new BachModal(options, this);
+
+//             if (exclusive) {
+//                 angular.forEach(this.modals, function (modal) {
+//                     modal.close();
+//                 });
+//             }
+//             this.modals.push(newModal);
+//             return newModal.enter();
+//         };
+
+//         this.remove = function (modal) {
+//             var index = this.modals.indexOf(modal);
+
+//             if (~index) {
+//                 this.modals.splice(index, 1);
+//             }
+
+//             return index;
+
+//         };
+//     });

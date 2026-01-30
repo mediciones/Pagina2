@@ -1,0 +1,268 @@
+// angular.module('rv.directives')
+//     .directive('bachScratch', function ($q, $timeout, $window, $document,
+//                                         BachModal, BachPaths, $log) {
+//         function loadImage (url) {
+//             var image = new Image();
+//             var defer = $q.defer();
+
+//             image.onload = function () {
+//                 defer.resolve(image);
+//             };
+
+//             image.src = url;
+
+//             return defer.promise;
+//         }
+
+//         function ScratchOffCanvas (data) {
+//             this.$element = data.element;
+//             this.element = data.element[0];
+//             this.$canvasEl = angular.element('<canvas></canvas>');
+//             this.$revealEl = angular.element('<div></div>');
+//             this.canvasEl = this.$canvasEl[0];
+//             this.$canvasEl.css({
+//                 position: 'absolute',
+//                 top: 0,
+//                 left: 0,
+//                 zIndex: 1
+//             });
+//             this.$revealEl.css({
+//                 position: 'absolute',
+//                 top: 0,
+//                 left: 0,
+//                 right: 0,
+//                 bottom: 0,
+//                 zIndex: 0
+//             });
+//             this.$element.prepend(this.$canvasEl);
+//             this.$element.prepend(this.$revealEl);
+//             this.ctx = this.canvasEl.getContext('2d');
+//             this.stride = 5;
+
+//             this.revealOn = parseInt(data.revealOn, 10) || 80;
+//             this.onReveal = data.onReveal || angular.noop;
+//             this.brush = new Image();
+//             this.brush.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAApCAMAAADzuKLBAAAArlBMVEVMaXEdHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0y9uZdAAAAOXRSTlMAYIDAUEDwECAw0OCgkLA9cFtXH1UuPJSXeWKLZHTiiL5MfLKFfnGBel87h9h3od7TnvGTvJLZWNxoOTh4AAAACXBIWXMAAAsSAAALEgHS3X78AAABNElEQVQ4y51T13LCMBA8WVax3MBA6JDee9///7HIjgkYyZ4hN3rQaHVt947oz3RIEbVbF/ZPy056mW5JVYy8GZUgCk3QHnPU8q41hR3NHR1ae/hwS8oPsRjBYCbI0xr48v6uAKRbSyTxCckNDHNyfQNBCmvSiRnYV1uHkLHjRl9pwixfxFNPkUlFr+r5WP5Y1KRdaEf5TdM8nvY1iaagGxrz8zPd+G0L/b2qJEZWXSM3M5MSJikxtcet4mX7sBib80kTE3GFYb0wJh823TSroPQNz/39bIUEYrykKywdOURqwFQuX5/gqqzGEHr4uF7BM4jXkwHR8B28lmontLqalQ7T+Y3F7DlOdmIP8nK07QDUftEW613WXHbv4KnoGNcOv37uG2QrQSh0hvZdC8f60K1pNPADERoV6ijYRMwAAAAASUVORK5CYII=';
+
+//             this.handleMousedown = this._handleMousedown.bind(this);
+//             this.handleMousemove = this._handleMousemove.bind(this);
+//             this.handleMouseup = this._handleMouseup.bind(this);
+//         }
+
+//         var proto = {
+//             initCover: function (coverImage) {
+//                 this.setWidth(this.$element.width());
+//                 this.setHeight((this.$element.height()));
+//                 this.drawCover(coverImage);
+
+//                 this.$canvasEl.on('mousedown', this.handleMousedown);
+//                 this.$canvasEl.on('touchstart', this.handleMousedown);
+//             },
+//             initReveal: function (image) {
+//                 this.$revealEl.css({
+//                     background: 'url(' + image.src + ') 50% 50%/cover'
+//                 })
+//             },
+//             reveal: function () {
+//                 var self = this;
+//                 TweenMax.to(this.$canvasEl, 0.5, {
+//                     opacity: 0
+//                 });
+
+//                 $timeout(function () {
+//                     self.$element.addClass('bach-scratch--active');
+//                 }, 750);
+//             },
+//             drawCover: function (coverImage) {
+//                 this.ctx.drawImage(coverImage, 0, 0, this.$element.width(), this.$element.height());
+//                 this.originalTotal = this.countOpaquePixels();
+//             },
+//             setWidth: function (width) {
+//                 this.canvasEl.width = width;
+//             },
+//             setHeight: function (height) {
+//                 this.canvasEl.height = height;
+//             },
+//             subtractImage: function (image, x, y) {
+//                 this.ctx.globalCompositeOperation = 'destination-out';
+//                 this.ctx.drawImage(image, x, y);
+//             },
+//             getMouseCoords: function (e) {
+//                 var offsetX = 0, offsetY = 0, mx, my, canvas = this.element;
+
+//                 if (canvas.offsetParent !== undefined) {
+//                     do {
+//                         offsetX += canvas.offsetLeft;
+//                         offsetY += canvas.offsetTop;
+//                     } while ((canvas = canvas.offsetParent));
+//                 }
+
+//                 mx = (e.pageX || ((e.originalEvent && e.originalEvent.touches) ? e.originalEvent.touches[0].pageX : 0)) - offsetX;
+//                 my = (e.pageY || ((e.originalEvent && e.originalEvent.touches) ? e.originalEvent.touches[0].pageY : 0)) - offsetY;
+
+//                 return {x: mx, y: my};
+//             },
+//             countOpaquePixels: function () {
+//                 try {
+//                     var pixels = this.ctx.getImageData(0, 0, this.$element.width(), this.$element.height()),
+//                         pdata = pixels.data,
+//                         l = pdata.length,
+//                         i, count,
+//                         offsetIndexBy = 4;
+
+//                     // Iterate over all pixels
+//                     for (i = offsetIndexBy, count = 0; i <= l; i += (this.stride * offsetIndexBy)) {
+//                         if (parseInt(pdata[i - 1]) !== 0) {
+//                             count++;
+//                         }
+//                     }
+
+//                     return count;
+//                 } catch (e) {
+//                     $log.error(e);
+//                 }
+//             },
+//             getTransparentPixelPercentage: function () {
+//                 var currentTotal = this.countOpaquePixels();
+//                 return (1 - (currentTotal / this.originalTotal)) * 100;
+//             },
+//             _getDistance: function (a, b) {
+//                 return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+//             },
+//             _getAngle: function (a, b) {
+//                 return Math.atan2(b.x - a.x, b.y - a.y);
+//             },
+//             preventDefault: function (e) {
+//                 e.preventDefault();
+//             },
+//             _handleMousedown: function (e) {
+//                 e.preventDefault();
+//                 this.lastPoint = this.getMouseCoords(e);
+
+//                 $document.on('mousemove', this.handleMousemove);
+//                 $document.on('mouseup', this.handleMouseup);
+
+//                 $document.on('touchmove', this.handleMousemove);
+//                 $document.on('touchend', this.handleMouseup);
+//             },
+//             _handleMousemove: function (e) {
+//                 this.currentPoint = this.getMouseCoords(e);
+
+//                 var distance = this._getDistance(this.currentPoint, this.lastPoint);
+//                 var angle = this._getAngle(this.currentPoint, this.lastPoint);
+
+//                 for (var i = 0; i < distance; i++) {
+//                     this.subtractImage(
+//                         this.brush,
+//                         this.lastPoint.x + (Math.sin(angle) * i) - 25,
+//                         this.lastPoint.y + (Math.cos(angle) * i) - 25
+//                     );
+//                 }
+
+//                 if (this.getTransparentPixelPercentage() >= this.revealOn && !this.isRevealed) {
+//                     this.reveal();
+//                 }
+
+//                 this.lastPoint = this.currentPoint;
+//             },
+//             _handleMouseup: function (e) {
+//                 var self = this;
+
+//                 if (this.getTransparentPixelPercentage() >= this.revealOn && !this.isRevealed) {
+//                     this.onReveal();
+//                     this.isRevealed = true;
+//                     this.$canvasEl.off('mousedown', this.handleMousedown);
+//                     this.$canvasEl.off('touchstart', this.handleMousedown);
+//                 }
+
+//                 $document.off('mousemove', this.handleMousemove);
+//                 $document.off('mouseup', this.handleMouseup);
+//             }
+//         };
+
+//         ScratchOffCanvas.prototype = proto;
+
+//         return {
+//             controller: function ($scope, $element, $templateCache, $compile, $animate) {
+//                 var self = this;
+
+//                 this.init = function (offerUrl, offerId, message, threshold) {
+//                     this.offerUrl = offerUrl;
+//                     $scope.offerId = offerId;
+//                     $scope.message = message;
+
+//                     //$element.on('click', self._handleClick);
+
+//                     if (this.offerUrl) {
+//                         var coverDefer = $q.defer(),
+//                             revealPromise = loadImage(this.offerUrl);
+
+//                         this.canvas = new ScratchOffCanvas({
+//                             element: $element,
+//                             revealOn: threshold,
+//                             onReveal: function () {
+//                                 // open form popup
+//                                 $element.on('mousedown', self._handleMousedown);
+//                             }
+//                         });
+
+//                         this.coverEl = $element.find('img');
+//                         this.coverEl[0].onload = function (e) {
+//                             coverDefer.resolve(e.target);
+//                         };
+
+//                         $q.all([coverDefer.promise, revealPromise])
+//                             .then(function (images) {
+//                                 self.coverImg = images[0];
+//                                 self.revealImg = images[1];
+
+//                                 self.canvas.initCover(self.coverImg);
+//                                 self.coverEl.css({
+//                                     zIndex: -1
+//                                 });
+
+//                                 $timeout(function () {
+//                                     self.canvas.initReveal(self.revealImg);
+//                                 }, 500);
+//                             });
+
+//                         if (this.coverEl[0].complete) {
+//                             coverDefer.resolve(this.coverEl[0])
+//                         }
+
+//                         $window.onresize = function () {
+//                             if (!self.canvas.isRevealed) {
+//                                 self.canvas.initCover(self.coverImg);
+//                             }
+//                         };
+//                     }
+//                 };
+
+//                 this._handleMousedown = function () {
+//                     if (!self.isModalReady) {
+//                         $element.on('mouseup', self._handleMouseup);
+//                         self.isModalReady = true;
+//                     }
+//                 };
+
+//                 this._handleMouseup = function () {
+//                     self._openOffer();
+//                     $element.off('mouseup', self._handleMouseup);
+//                     $element.off('mousedown', self._handleMousedown);
+//                     $element.off('click', self._handleClick);
+//                 };
+
+//                 this._handleClick = function () {
+//                     self._openOffer();
+//                 };
+
+//                 this._openOffer = function () {
+//                     var offerEl = angular.element($templateCache.get(BachPaths.templates.claimOffer));
+//                     $animate.enter($compile(offerEl)($scope), $element);
+//                 };
+//             },
+//             link: function (scope, element, attrs, ctrl) {
+//                 ctrl.init(attrs.bachScratchOfferUrl, attrs.bachScratchOfferId, attrs.bachScratchOfferMessage, attrs.bachScratchThreshold);
+//             }
+//         };
+//     });

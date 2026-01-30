@@ -1,0 +1,69 @@
+function handleClick(e) {
+    const { className, parentElement } = e.target;
+    const buttonClicked = className.includes('bach-button-tracking');
+    const linkClicked = className.includes('bach-link-tracking');
+    let buttonTextClicked, linkTextClicked;
+
+    if (parentElement) {
+        if (parentElement.className) {
+            linkTextClicked = parentElement.className.includes('bach-link-tracking');
+        }
+
+        if (parentElement.parentElement && parentElement.parentElement.className) {
+            buttonTextClicked = parentElement.parentElement.className.includes('bach-button-tracking');
+        }
+    }
+
+    if (buttonClicked || buttonTextClicked) {
+        handleVisitorEvent("ButtonAction");
+    } else if (linkClicked || linkTextClicked) {
+        handleVisitorEvent("LinkAction");
+    }
+}
+
+function handleFormSubmit(e) {
+    const { className } = e.target;
+
+    if (e.target.querySelectorAll('._has_error').length > 0) return false;
+
+    if (className.includes('bach-form')) {
+        handleVisitorEvent("PagesFormAction");
+    } else if (className.includes('_form_')) {
+        handleVisitorEvent("ACFormAction");
+    } else {
+        handleVisitorEvent("ExternalFormAction");
+    }
+
+}
+
+function handleInitialLoad() {
+    handleVisitorEvent("Visit");
+};
+
+function handleVisitorEvent(type) {
+    const id = window.LL_INFO.guid;
+    const prodMetricsUrl = "https://landing-pages-visitor-events.cluster.app-us1.com/Visitor/";
+    const stagingMetricsUrl = "https://landing-pages-visitor-events-staging.cluster-public.staging.app-us1.com/Visitor/";
+    const metricsApiUrl = isStaging() ? stagingMetricsUrl : prodMetricsUrl;
+    const params = {
+       "id": id,
+       "type": type
+    };
+    const xhr = new XMLHttpRequest();
+    
+    xhr.open("POST", metricsApiUrl);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(params));
+};
+
+function isStaging() {
+    const scripts = new Array(...document.querySelectorAll("script[src]"));
+    const analyticsScript = scripts.find(script => script.src.includes('/analytics/analytics'));
+    return analyticsScript.src.includes('staging');
+}
+
+document.addEventListener("click", handleClick);
+
+document.addEventListener("submit", handleFormSubmit);
+
+window.addEventListener("load", handleInitialLoad);
